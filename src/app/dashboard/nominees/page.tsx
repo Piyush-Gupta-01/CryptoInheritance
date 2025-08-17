@@ -28,7 +28,7 @@ import { useWills } from '@/hooks/useWills'
 interface NomineeWithWill {
   id: string
   address: string
-  name: string
+  name?: string          // <-- made optional
   email?: string
   phone?: string
   percentage: number
@@ -38,6 +38,7 @@ interface NomineeWithWill {
   willName: string
   addedTimestamp: number
 }
+
 
 export default function NomineesPage() {
   const { address, isConnected } = useAccount()
@@ -64,15 +65,18 @@ export default function NomineesPage() {
   }
 
   // Flatten nominees from all wills
-  const allNominees: NomineeWithWill[] = wills?.flatMap(will => 
-    will.nominees?.map(nominee => ({
-      ...nominee,
-      id: `${will.id}-${nominee.address}`,
-      willId: will.id,
-      willName: will.name || `Will #${will.id}`,
-      addedTimestamp: Date.now() / 1000 - Math.random() * 86400 * 30 // Mock timestamp
-    })) || []
-  ) || []
+  // Flatten nominees from all wills
+const allNominees: NomineeWithWill[] = wills?.flatMap(will => 
+  will.nominees?.map(nominee => ({
+    ...nominee,
+    id: `${will.id}-${nominee.address}`,
+    willId: will.id,
+    willName: will.name || `Will #${will.id}`,
+    name: nominee.name ?? 'Unnamed Nominee',  // <-- fallback string
+    addedTimestamp: Math.floor(Date.now() / 1000 - Math.random() * 86400 * 30) // Mock timestamp
+  })) || []
+) || []
+
 
   const filteredNominees = allNominees.filter(nominee => {
     const matchesSearch = nominee.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
